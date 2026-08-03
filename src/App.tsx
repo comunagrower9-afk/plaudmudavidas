@@ -1064,10 +1064,6 @@ function App() {
           <h3>Gravação em modo duplo</h3>
           <p>Alterne facilmente entre gravação de chamadas telefônicas e gravação presencial.</p>
         </div>
-        <div className="feature-card">
-          <h3>Plano Inicial Gratuito</h3>
-          <p>300 minutos/mês de transcrição incluídos. Faça upgrade a qualquer momento para obter mais minutos e recursos avançados de IA.</p>
-        </div>
       </section>
 
       {/* ===== SECTION 04: Features Infographic ===== */}
