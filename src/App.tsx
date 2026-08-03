@@ -15,6 +15,13 @@ const COLOR_NAMES: Record<string, string> = {
   starlight: 'Starlight',
 }
 
+const CHECKOUT_URLS_BY_COLOR: Record<string, string> = {
+  blue: 'https://checkout.plaudai.site/VCCL1O8SD7C1',
+  silver: 'https://checkout.plaudai.site/VCCL1O8SD7BX',
+  gray: 'https://checkout.plaudai.site/VCCL1O8SD7C0',
+  starlight: 'https://checkout.plaudai.site/VCCL1O8SD7BU',
+}
+
 interface ProductImage {
   src: string
   alt: string
@@ -274,7 +281,7 @@ function addBusinessDays(startDate: Date, days: number): string {
 function App() {
   const [quantity, setQuantity] = useState(1)
   const [selectedColor, setSelectedColor] = useState('')
-  const [openAccordion, setOpenAccordion] = useState('chamadas')
+  const [openAccordion, setOpenAccordion] = useState('')
   const [cep, setCep] = useState('')
   const [cepLoading, setCepLoading] = useState(false)
   const [cepError, setCepError] = useState<string | null>(null)
@@ -311,6 +318,12 @@ function App() {
       }
     }
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleFinalizePurchase = () => {
+    const activeColorId = cartItems.length > 0 ? cartItems[0].colorId : (selectedColor || 'gray')
+    const redirectUrl = CHECKOUT_URLS_BY_COLOR[activeColorId] || CHECKOUT_URLS_BY_COLOR.gray
+    window.location.href = redirectUrl
   }
 
   const handleCheckoutCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -832,7 +845,7 @@ function App() {
 
           {/* Fixed Green Action Button at Bottom */}
           <div className="checkout-fixed-bottom">
-            <button className="checkout-submit-btn">
+            <button className="checkout-submit-btn" onClick={handleFinalizePurchase}>
               Finalizar compra
             </button>
           </div>
