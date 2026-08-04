@@ -1,12 +1,8 @@
 import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 import './ThankYouPage.css'
 
 export const ThankYouPage: React.FC = () => {
-  const { session } = useAuth()
-  const trackingDestination = session ? '/minha-conta' : '/entrar'
-
   useEffect(() => {
     // Gerenciamento seguro de metadados para não indexação da página de confirmação
     const originalTitle = document.title
@@ -40,11 +36,11 @@ export const ThankYouPage: React.FC = () => {
 
   return (
     <div className="ty-page-wrapper">
-      {/* 1. Cabeçalho Minimalista */}
+      {/* 1. Cabeçalho Minimalista com logo-branco */}
       <header className="ty-header" role="banner">
         <Link to="/" aria-label="Página inicial da PLAUD">
           <img
-            src="/images/email/logo-white.png"
+            src="/images/logo-branco.png"
             alt="PLAUD"
             className="ty-logo-img"
             onError={(e) => {
@@ -195,37 +191,7 @@ export const ThankYouPage: React.FC = () => {
             </div>
           </section>
 
-          {/* 5. Card de Acompanhamento */}
-          <section className="ty-action-card" aria-labelledby="action-title">
-            <h2 id="action-title" className="ty-action-title">
-              Acompanhe tudo em um só lugar
-            </h2>
-            <p className="ty-action-text">
-              Entre utilizando o mesmo e-mail informado na compra para consultar seus pedidos e acompanhar o rastreamento.
-            </p>
-            <Link to={trackingDestination} className="ty-btn-primary">
-              <span>Acompanhar meu pedido</span>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </Link>
-            <Link to="/" className="ty-link-secondary">
-              Voltar para a página inicial
-            </Link>
-          </section>
-
-          {/* 6. Orientação sobre o E-mail */}
+          {/* 5. Orientação sobre o E-mail */}
           <section className="ty-email-tips" aria-label="Orientações sobre o e-mail de confirmação">
             <p>
               <strong>Não encontrou a confirmação?</strong> Aguarde alguns minutos e verifique também as abas Promoções, Atualizações e Spam.
@@ -234,6 +200,13 @@ export const ThankYouPage: React.FC = () => {
               Para falar sobre seu pedido, responda diretamente ao e-mail de confirmação.
             </p>
           </section>
+
+          {/* 6. Botão de Retorno */}
+          <div className="ty-home-action">
+            <Link to="/" className="ty-btn-home">
+              <span>Voltar para a página inicial</span>
+            </Link>
+          </div>
         </div>
       </main>
 

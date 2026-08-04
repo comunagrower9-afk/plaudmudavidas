@@ -2,25 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { ThankYouPage } from '../pages/ThankYouPage'
-import { AuthContext, type AuthContextType } from '../context/AuthContext'
-
-const mockUnauthenticatedContext: AuthContextType = {
-  session: null,
-  user: null,
-  isAdmin: false,
-  loading: false,
-  signOut: vi.fn(),
-  checkIsAdmin: vi.fn().mockResolvedValue(false),
-}
-
-const mockAuthenticatedContext: AuthContextType = {
-  session: { user: { id: 'usr-customer-123', email: 'cliente@exemplo.com' } } as never,
-  user: { id: 'usr-customer-123', email: 'cliente@exemplo.com' } as never,
-  isAdmin: false,
-  loading: false,
-  signOut: vi.fn(),
-  checkIsAdmin: vi.fn().mockResolvedValue(false),
-}
 
 describe('Página de Obrigado (/obrigado)', () => {
   beforeEach(() => {
@@ -30,13 +11,11 @@ describe('Página de Obrigado (/obrigado)', () => {
 
   it('1. Renderiza todos os textos essenciais da página de confirmação', () => {
     render(
-      <AuthContext.Provider value={mockUnauthenticatedContext}>
-        <MemoryRouter initialEntries={['/obrigado']}>
-          <Routes>
-            <Route path="/obrigado" element={<ThankYouPage />} />
-          </Routes>
-        </MemoryRouter>
-      </AuthContext.Provider>
+      <MemoryRouter initialEntries={['/obrigado']}>
+        <Routes>
+          <Route path="/obrigado" element={<ThankYouPage />} />
+        </Routes>
+      </MemoryRouter>
     )
 
     // Badge de confirmação
@@ -69,16 +48,6 @@ describe('Página de Obrigado (/obrigado)', () => {
     expect(screen.getByText('Entrega')).toBeInTheDocument()
     expect(screen.getByText('Você poderá acompanhar cada movimentação.')).toBeInTheDocument()
 
-    // Card de acompanhamento
-    expect(screen.getByText('Acompanhe tudo em um só lugar')).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        'Entre utilizando o mesmo e-mail informado na compra para consultar seus pedidos e acompanhar o rastreamento.'
-      )
-    ).toBeInTheDocument()
-    expect(screen.getByText('Acompanhar meu pedido')).toBeInTheDocument()
-    expect(screen.getByText('Voltar para a página inicial')).toBeInTheDocument()
-
     // Orientação sobre o e-mail
     expect(screen.getByText('Não encontrou a confirmação?')).toBeInTheDocument()
     expect(
@@ -88,58 +57,51 @@ describe('Página de Obrigado (/obrigado)', () => {
       screen.getByText('Para falar sobre seu pedido, responda diretamente ao e-mail de confirmação.')
     ).toBeInTheDocument()
 
+    // Botão de retorno
+    expect(screen.getByText('Voltar para a página inicial')).toBeInTheDocument()
+
     // Rodapé
     expect(screen.getByText(/Plaud Note Brasil/i)).toBeInTheDocument()
     expect(screen.getByText(/plaudai\.site/i)).toBeInTheDocument()
     expect(screen.getByText(/Ambiente seguro\. Seus dados de compra são protegidos\./i)).toBeInTheDocument()
   })
 
-  it('2. Direciona para /entrar quando o cliente NÃO está autenticado', () => {
+  it('2. Garante que NÃO existe botão para "Acompanhar meu pedido"', () => {
     render(
-      <AuthContext.Provider value={mockUnauthenticatedContext}>
-        <MemoryRouter initialEntries={['/obrigado']}>
-          <Routes>
-            <Route path="/obrigado" element={<ThankYouPage />} />
-          </Routes>
-        </MemoryRouter>
-      </AuthContext.Provider>
+      <MemoryRouter initialEntries={['/obrigado']}>
+        <Routes>
+          <Route path="/obrigado" element={<ThankYouPage />} />
+        </Routes>
+      </MemoryRouter>
     )
 
-    const trackingLink = screen.getByRole('link', { name: /Acompanhar meu pedido/i })
-    expect(trackingLink).toHaveAttribute('href', '/entrar')
+    expect(screen.queryByText(/Acompanhar meu pedido/i)).not.toBeInTheDocument()
+  })
+
+  it('3. Contém link para voltar para a página inicial com destino "/"', () => {
+    render(
+      <MemoryRouter initialEntries={['/obrigado']}>
+        <Routes>
+          <Route path="/obrigado" element={<ThankYouPage />} />
+        </Routes>
+      </MemoryRouter>
+    )
 
     const homeLink = screen.getByRole('link', { name: /Voltar para a página inicial/i })
     expect(homeLink).toHaveAttribute('href', '/')
   })
 
-  it('3. Direciona para /minha-conta quando o cliente JÁ está autenticado', () => {
-    render(
-      <AuthContext.Provider value={mockAuthenticatedContext}>
-        <MemoryRouter initialEntries={['/obrigado']}>
-          <Routes>
-            <Route path="/obrigado" element={<ThankYouPage />} />
-          </Routes>
-        </MemoryRouter>
-      </AuthContext.Provider>
-    )
-
-    const trackingLink = screen.getByRole('link', { name: /Acompanhar meu pedido/i })
-    expect(trackingLink).toHaveAttribute('href', '/minha-conta')
-  })
-
   it('4. Não expõe ou renderiza dados pessoais ou parâmetros arbitrários da URL', () => {
     render(
-      <AuthContext.Provider value={mockUnauthenticatedContext}>
-        <MemoryRouter
-          initialEntries={[
-            '/obrigado?customer_name=JohnDoe&email=vaza@teste.com&cpf=12345678900&total=119.90&status=paid',
-          ]}
-        >
-          <Routes>
-            <Route path="/obrigado" element={<ThankYouPage />} />
-          </Routes>
-        </MemoryRouter>
-      </AuthContext.Provider>
+      <MemoryRouter
+        initialEntries={[
+          '/obrigado?customer_name=JohnDoe&email=vaza@teste.com&cpf=12345678900&total=119.90&status=paid',
+        ]}
+      >
+        <Routes>
+          <Route path="/obrigado" element={<ThankYouPage />} />
+        </Routes>
+      </MemoryRouter>
     )
 
     // Nenhum parâmetro sensível vindo da URL deve ser renderizado na DOM
@@ -155,13 +117,11 @@ describe('Página de Obrigado (/obrigado)', () => {
     ;(window as unknown as { fbq?: unknown }).fbq = fbqMock
 
     render(
-      <AuthContext.Provider value={mockUnauthenticatedContext}>
-        <MemoryRouter initialEntries={['/obrigado']}>
-          <Routes>
-            <Route path="/obrigado" element={<ThankYouPage />} />
-          </Routes>
-        </MemoryRouter>
-      </AuthContext.Provider>
+      <MemoryRouter initialEntries={['/obrigado']}>
+        <Routes>
+          <Route path="/obrigado" element={<ThankYouPage />} />
+        </Routes>
+      </MemoryRouter>
     )
 
     // Verifica que fbq não foi invocado com Purchase ou qualquer outro evento
@@ -171,13 +131,11 @@ describe('Página de Obrigado (/obrigado)', () => {
 
   it('6. Configura título e tag robots noindex, nofollow dinamicamente e restaura no unmount', () => {
     const { unmount } = render(
-      <AuthContext.Provider value={mockUnauthenticatedContext}>
-        <MemoryRouter initialEntries={['/obrigado']}>
-          <Routes>
-            <Route path="/obrigado" element={<ThankYouPage />} />
-          </Routes>
-        </MemoryRouter>
-      </AuthContext.Provider>
+      <MemoryRouter initialEntries={['/obrigado']}>
+        <Routes>
+          <Route path="/obrigado" element={<ThankYouPage />} />
+        </Routes>
+      </MemoryRouter>
     )
 
     expect(document.title).toBe('Pedido Confirmado | Plaud Note')
@@ -189,19 +147,18 @@ describe('Página de Obrigado (/obrigado)', () => {
     expect(document.title).toBe('PLAUD NOTE')
   })
 
-  it('7. Exibe imagens com alt text acessível e sem elementos quebrados', () => {
+  it('7. Exibe logo-branco com alt text acessível e imagem individual do produto', () => {
     render(
-      <AuthContext.Provider value={mockUnauthenticatedContext}>
-        <MemoryRouter initialEntries={['/obrigado']}>
-          <Routes>
-            <Route path="/obrigado" element={<ThankYouPage />} />
-          </Routes>
-        </MemoryRouter>
-      </AuthContext.Provider>
+      <MemoryRouter initialEntries={['/obrigado']}>
+        <Routes>
+          <Route path="/obrigado" element={<ThankYouPage />} />
+        </Routes>
+      </MemoryRouter>
     )
 
-    const logo = screen.getByAltText('PLAUD')
+    const logo = screen.getByAltText('PLAUD') as HTMLImageElement
     expect(logo).toBeInTheDocument()
+    expect(logo.getAttribute('src')).toBe('/images/logo-branco.png')
 
     const productImg = screen.getByAltText('PLAUD Note Cinza')
     expect(productImg).toBeInTheDocument()
