@@ -160,6 +160,7 @@ ul {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   padding: 16px var(--page-padding);
   border-bottom: 1px solid var(--color-gray-border);
   position: sticky;
@@ -171,17 +172,21 @@ ul {
 .header-logo {
   display: flex;
   align-items: center;
+  flex: 0 0 auto;
 }
 
 .header-logo img {
   height: 28px;
   width: auto;
+  max-width: none;
   display: block;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
+  flex: 0 0 auto;
+  margin-left: auto;
   gap: 20px;
 }
 
@@ -2483,24 +2488,112 @@ ul {
    PORTAL & ADMIN STYLES (Plaud Design System)
    ========================================================================== */
 
-.header-order-tracking-link {
-  display: inline-flex;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
-  margin-right: 8px;
-  white-space: nowrap;
+.header-menu-toggle {
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
 }
 
-.header-order-tracking-link:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: var(--color-coral);
+.header-menu-toggle[aria-expanded='true'] {
+  background-color: var(--color-gray-light);
+}
+
+.header-quick-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 101;
+  padding: 12px var(--page-padding) 16px;
+  background: var(--color-white);
+  border-top: 1px solid var(--color-gray-border);
+  border-bottom: 1px solid var(--color-gray-border);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
+  animation: header-menu-enter 0.18s ease-out both;
+}
+
+.header-quick-menu-link {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 13px 16px;
+  color: var(--color-text-primary);
+  background: var(--color-gray-card);
+  border: 1px solid var(--color-gray-border);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.header-quick-menu-link:hover,
+.header-quick-menu-link:focus-visible {
+  background: var(--color-white);
+  border-color: var(--color-text-primary);
+  outline: none;
+}
+
+.header-quick-menu-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header-quick-menu-eyebrow {
+  color: var(--color-text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.header-quick-menu-title {
+  font-family: var(--font-title);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.header-quick-menu-arrow {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+
+.header-quick-menu-arrow svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+@keyframes header-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 360px) {
+  .header {
+    gap: 12px;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .header-actions {
+    gap: 16px;
+  }
+
+  .header-quick-menu {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
 }
 
 .portal-page-wrapper {
@@ -3578,8 +3671,4 @@ ul {
     text-align: center;
   }
 
-  .header-order-tracking-link {
-    font-size: 12px;
-    padding: 4px 8px;
-  }
 }

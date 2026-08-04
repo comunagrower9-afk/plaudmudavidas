@@ -387,6 +387,7 @@ function App() {
   const [email, setEmail] = useState('')
   const [currentSlide, setCurrentSlide] = useState(0)
   const [showStickyBar, setShowStickyBar] = useState(false)
+  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false)
 
   /* Cart & Flying Particle States */
   const [currentView, setCurrentView] = useState<'product' | 'checkout'>('product')
@@ -405,6 +406,7 @@ function App() {
   const [isCartPopping, setIsCartPopping] = useState(false)
   const [particles, setParticles] = useState<FlyingParticle[]>([])
   const cartBtnRef = useRef<HTMLButtonElement | null>(null)
+  const headerRef = useRef<HTMLElement | null>(null)
 
   const handleGoToCheckout = () => {
     setIsCartOpen(false)
@@ -662,6 +664,30 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  useEffect(() => {
+    if (!isHeaderMenuOpen) return
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
+        setIsHeaderMenuOpen(false)
+      }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsHeaderMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isHeaderMenuOpen])
+
   const currentImages = (selectedColor && PRODUCT_IMAGES_BY_COLOR[selectedColor])
     ? PRODUCT_IMAGES_BY_COLOR[selectedColor]
     : DEFAULT_PRODUCT_IMAGES
@@ -704,12 +730,13 @@ function App() {
         A marca número 1 no mundo de gravadores de IA.
       </div>
 
-      <header className="header">
+      <header ref={headerRef} className="header">
         <a
           href="#"
           className="header-logo"
           onClick={e => {
             e.preventDefault()
+            setIsHeaderMenuOpen(false)
             setCurrentView('product')
             window.scrollTo({ top: 0, behavior: 'smooth' })
           }}
@@ -717,21 +744,23 @@ function App() {
           <img src="/images/logo.png" alt="PLAUD" />
         </a>
         <div className="header-actions">
-          <a
-            href="/minha-conta"
-            className="header-order-tracking-link"
-            title="Acompanhar pedido"
+          <button
+            type="button"
+            className="header-icon"
+            aria-label="Buscar"
+            onClick={() => setIsHeaderMenuOpen(false)}
           >
-            Acompanhar pedido
-          </a>
-          <button className="header-icon" aria-label="Buscar">
             <SearchIcon />
           </button>
           <button
+            type="button"
             ref={cartBtnRef}
             className={`header-icon cart-btn ${isCartPopping ? 'pop' : ''}`}
             aria-label="Carrinho"
-            onClick={() => setIsCartOpen(true)}
+            onClick={() => {
+              setIsHeaderMenuOpen(false)
+              setIsCartOpen(true)
+            }}
           >
             <CartIcon />
             {cartCount > 0 && (
@@ -740,10 +769,39 @@ function App() {
               </span>
             )}
           </button>
-          <button className="header-icon" aria-label="Menu">
+          <button
+            type="button"
+            className="header-icon header-menu-toggle"
+            aria-label={isHeaderMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={isHeaderMenuOpen}
+            aria-controls="header-quick-menu"
+            onClick={() => setIsHeaderMenuOpen(open => !open)}
+          >
             <MenuIcon />
           </button>
         </div>
+
+        {isHeaderMenuOpen && (
+          <nav
+            id="header-quick-menu"
+            className="header-quick-menu"
+            aria-label="Acesso rápido"
+          >
+            <a
+              href="/minha-conta"
+              className="header-quick-menu-link"
+              onClick={() => setIsHeaderMenuOpen(false)}
+            >
+              <span className="header-quick-menu-copy">
+                <span className="header-quick-menu-eyebrow">Área do cliente</span>
+                <span className="header-quick-menu-title">Acompanhar pedido</span>
+              </span>
+              <span className="header-quick-menu-arrow" aria-hidden="true">
+                <ArrowRight />
+              </span>
+            </a>
+          </nav>
+        )}
       </header>
 
       {currentView === 'checkout' ? (
