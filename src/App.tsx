@@ -22,6 +22,99 @@ const CHECKOUT_URLS_BY_COLOR: Record<string, string> = {
   starlight: 'https://checkout.plaudai.site/VCCL1O8SD7BU',
 }
 
+/* ===== UTM & TRACKING PARAMETERS PROPAGATION ===== */
+const TRACKING_PARAM_KEYS = [
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_content',
+  'utm_term',
+  'utm_id',
+  'src',
+  'sck',
+  'fbclid',
+  'gclid',
+  'ttclid',
+]
+
+export function captureTrackingParams(): Record<string, string> {
+  const params: Record<string, string> = {}
+
+  if (typeof window !== 'undefined') {
+    // 1. Recover previously stored params from sessionStorage
+    try {
+      const stored = sessionStorage.getItem('utm_params')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed && typeof parsed === 'object') {
+          Object.assign(params, parsed)
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    // 2. Capture parameters from current URL
+    if (window.location && window.location.search) {
+      const urlSearchParams = new URLSearchParams(window.location.search)
+      
+      TRACKING_PARAM_KEYS.forEach(key => {
+        const value = urlSearchParams.get(key)
+        if (value && value.trim() !== '') {
+          params[key] = value.trim()
+        }
+      })
+
+      // Any dynamic UTM parameter starting with utm_
+      urlSearchParams.forEach((value, key) => {
+        if (key.toLowerCase().startsWith('utm_') && value && value.trim() !== '') {
+          params[key] = value.trim()
+        }
+      })
+    }
+
+    // 3. Save merged parameters to sessionStorage
+    try {
+      if (Object.keys(params).length > 0) {
+        sessionStorage.setItem('utm_params', JSON.stringify(params))
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return params
+}
+
+export function buildCheckoutUrl(baseCheckoutUrl: string): string {
+  if (!baseCheckoutUrl) return baseCheckoutUrl
+
+  try {
+    const urlObj = new URL(baseCheckoutUrl)
+    const trackingParams = captureTrackingParams()
+
+    Object.entries(trackingParams).forEach(([key, val]) => {
+      if (val && typeof val === 'string' && val.trim() !== '') {
+        urlObj.searchParams.set(key, val.trim())
+      }
+    })
+
+    return urlObj.toString()
+  } catch {
+    const trackingParams = captureTrackingParams()
+    const entries = Object.entries(trackingParams).filter(([_, v]) => v && typeof v === 'string' && v.trim() !== '')
+    if (entries.length === 0) return baseCheckoutUrl
+    const query = entries.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&')
+    const separator = baseCheckoutUrl.includes('?') ? '&' : '?'
+    return `${baseCheckoutUrl}${separator}${query}`
+  }
+}
+
+// Initial capture immediately upon script load
+if (typeof window !== 'undefined') {
+  captureTrackingParams()
+}
+
 interface ProductImage {
   src: string
   alt: string
@@ -322,8 +415,9 @@ function App() {
 
   const handleFinalizePurchase = () => {
     const activeColorId = cartItems.length > 0 ? cartItems[0].colorId : (selectedColor || 'gray')
-    const redirectUrl = CHECKOUT_URLS_BY_COLOR[activeColorId] || CHECKOUT_URLS_BY_COLOR.gray
-    window.location.href = redirectUrl
+    const rawRedirectUrl = CHECKOUT_URLS_BY_COLOR[activeColorId] || CHECKOUT_URLS_BY_COLOR.gray
+    const finalCheckoutUrl = buildCheckoutUrl(rawRedirectUrl)
+    window.location.assign(finalCheckoutUrl)
   }
 
   const handleCheckoutCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -551,6 +645,7 @@ function App() {
   }
 
   useEffect(() => {
+    captureTrackingParams()
     const handleScroll = () => {
       if (window.scrollY > 400) {
         setShowStickyBar(true)
@@ -845,9 +940,16 @@ function App() {
 
           {/* Fixed Green Action Button at Bottom */}
           <div className="checkout-fixed-bottom">
-            <button className="checkout-submit-btn" onClick={handleFinalizePurchase}>
+            <a
+              href={buildCheckoutUrl(CHECKOUT_URLS_BY_COLOR[cartItems[0]?.colorId || selectedColor || 'gray'] || CHECKOUT_URLS_BY_COLOR.gray)}
+              className="checkout-submit-btn"
+              onClick={e => {
+                e.preventDefault()
+                handleFinalizePurchase()
+              }}
+            >
               Finalizar compra
-            </button>
+            </a>
           </div>
         </div>
       ) : (
