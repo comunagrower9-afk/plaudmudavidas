@@ -350,7 +350,7 @@ ul {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 4px;
 }
 
 .stars {
@@ -449,7 +449,7 @@ ul {
 
 /* ===== PRICING ===== */
 .pricing-section {
-  padding: 16px var(--page-padding);
+  padding: 0 var(--page-padding) 16px;
 }
 
 .price-original {
@@ -466,7 +466,7 @@ ul {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 20px;
 }
 
 .price-value {
@@ -480,21 +480,6 @@ ul {
   font-size: 15px;
   color: var(--color-coral);
   font-weight: 500;
-}
-
-.installment-info {
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  margin-bottom: 4px;
-}
-
-.payment-details {
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  text-decoration: underline;
-  cursor: pointer;
-  margin-bottom: 24px;
-  display: inline-block;
 }
 
 /* ===== COLOR SELECTOR ===== */

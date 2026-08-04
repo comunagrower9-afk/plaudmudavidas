@@ -920,8 +920,6 @@ function App() {
           <span className="price-value">R$119,90</span>
           <span className="price-label">no PIX</span>
         </div>
-        <p className="installment-info">ou 12x de R$ 11,99</p>
-        <a className="payment-details">Ver mais detalhes de pagamento</a>
 
         <div className="color-selector">
           <p className="color-label">Cor: <span>{selectedColor ? (COLOR_NAMES[selectedColor] || '') : 'Selecione'}</span></p>
