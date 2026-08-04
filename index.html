@@ -2,6 +2,56 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
+    <!-- Limpeza antecipada e sanitização de parâmetros para /obrigado (antes de qualquer pixel/script de terceiros) -->
+    <script>
+      (function() {
+        try {
+          if (window.location.pathname === '/obrigado' || window.location.pathname === '/obrigado/') {
+            var search = window.location.search;
+            if (search && search.length > 1) {
+              var params = new URLSearchParams(search);
+              var rawName = params.get('customer_name');
+              var rawEmail = params.get('customer_email');
+
+              var firstName = null;
+              if (rawName && typeof rawName === 'string') {
+                var normalized = rawName.normalize('NFC').replace(/[\u0000-\u001F\u007F-\u009F]/g, '').trim();
+                if (/^[\p{L}\p{M}\s'-]+$/u.test(normalized)) {
+                  var collapsed = normalized.replace(/\s+/g, ' ').trim();
+                  var first = collapsed.split(' ')[0];
+                  if (first && first.length > 0 && /\p{L}/u.test(first)) {
+                    firstName = first.slice(0, 40);
+                  }
+                }
+              }
+
+              var maskedEmail = null;
+              if (rawEmail && typeof rawEmail === 'string' && rawEmail.trim().length <= 254) {
+                var lower = rawEmail.trim().toLowerCase();
+                var parts = lower.split('@');
+                if (parts.length === 2 && parts[0].length >= 1 && parts[0].length <= 64 && parts[1].length >= 3 && parts[1].length <= 253) {
+                  if (/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(parts[0]) && /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/.test(parts[1])) {
+                    if (/[a-z0-9]/.test(parts[0].charAt(0))) {
+                      maskedEmail = parts[0].charAt(0) + '***@' + parts[1];
+                    }
+                  }
+                }
+              }
+
+              var prevState = (window.history.state && typeof window.history.state === 'object') ? window.history.state : {};
+              var newState = Object.assign({}, prevState, {
+                sanitizedCustomerContext: {
+                  firstName: firstName,
+                  maskedEmail: maskedEmail
+                }
+              });
+
+              window.history.replaceState(newState, '', window.location.pathname);
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/images/favicon%20plaud.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="PLAUD Note - O gravador profissional com IA que vai maximizar sua produtividade. Transcrição por IA em 112 idiomas." />

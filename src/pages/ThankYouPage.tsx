@@ -1,8 +1,12 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { extractAndCleanUrlParams, type SanitizedCustomerContext } from '../lib/thank-you-sanitizer'
 import './ThankYouPage.css'
 
 export const ThankYouPage: React.FC = () => {
+  // Extrai o contexto sanitizado (lendo history.state ou URL com limpeza imediata)
+  const [customerContext] = useState<SanitizedCustomerContext>(() => extractAndCleanUrlParams())
+
   useEffect(() => {
     // Gerenciamento seguro de metadados para não indexação da página de confirmação
     const originalTitle = document.title
@@ -33,6 +37,14 @@ export const ThankYouPage: React.FC = () => {
       }
     }
   }, [])
+
+  const { firstName, maskedEmail } = customerContext
+
+  // Mensagens de personalização visual segura
+  const heroTitle = firstName ? `Tudo certo, ${firstName}.` : 'Tudo certo.'
+  const emailNotice = maskedEmail
+    ? `Enviamos a confirmação e os detalhes do pedido para ${maskedEmail}.`
+    : 'Enviamos a confirmação e os detalhes para o e-mail informado durante a compra.'
 
   return (
     <div className="ty-page-wrapper">
@@ -74,15 +86,15 @@ export const ThankYouPage: React.FC = () => {
             </div>
 
             <h1 id="hero-title" className="ty-hero-title">
-              Seu novo PLAUD está confirmado.
+              {heroTitle}
             </h1>
 
             <p className="ty-hero-subtitle">
-              Recebemos seu pagamento e seu pedido já entrou na nossa fila de preparação.
+              Seu novo PLAUD está confirmado.
             </p>
 
             <p className="ty-hero-notice">
-              A confirmação completa foi enviada para o e-mail informado durante a compra.
+              {emailNotice}
             </p>
 
             {/* Imagem individual do Plaud Note Cinza */}
