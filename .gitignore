@@ -26,3 +26,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.tmp-profile/
+email-previews/
+scripts/temp-verify.html

@@ -336,6 +336,11 @@ const SiteFooter = () => (
         <p>Segunda à Sexta das 09h às 18h.</p>
         <p>+55 11 98932-9358</p>
         <p>sac@plaud.com.br</p>
+        <p style={{ marginTop: '12px' }}>
+          <a href="/minha-conta" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 600 }}>
+            📦 Acompanhar pedido
+          </a>
+        </p>
       </div>
     </div>
 
@@ -712,6 +717,13 @@ function App() {
           <img src="/images/logo.png" alt="PLAUD" />
         </a>
         <div className="header-actions">
+          <a
+            href="/minha-conta"
+            className="header-order-tracking-link"
+            title="Acompanhar pedido"
+          >
+            Acompanhar pedido
+          </a>
           <button className="header-icon" aria-label="Buscar">
             <SearchIcon />
           </button>

@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_events: {
+        Row: {
+          action: string
+          admin_user_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          order_id: string | null
+          result_status: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          result_status?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          result_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_users: {
+        Row: {
+          auth_user_id: string
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          auth_user_id: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          auth_user_id?: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           auth_user_id: string | null
@@ -49,12 +105,16 @@ export type Database = {
       }
       email_events: {
         Row: {
+          attempt_count: number
           created_at: string
           delivered_at: string | null
           error_message: string | null
           id: string
           idempotency_key: string
+          lock_token: string | null
+          locked_at: string | null
           metadata: Json
+          next_attempt_at: string | null
           order_id: string | null
           provider_message_id: string | null
           recipient: string
@@ -64,12 +124,16 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attempt_count?: number
           created_at?: string
           delivered_at?: string | null
           error_message?: string | null
           id?: string
           idempotency_key: string
+          lock_token?: string | null
+          locked_at?: string | null
           metadata?: Json
+          next_attempt_at?: string | null
           order_id?: string | null
           provider_message_id?: string | null
           recipient: string
@@ -79,12 +143,16 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attempt_count?: number
           created_at?: string
           delivered_at?: string | null
           error_message?: string | null
           id?: string
           idempotency_key?: string
+          lock_token?: string | null
+          locked_at?: string | null
           metadata?: Json
+          next_attempt_at?: string | null
           order_id?: string | null
           provider_message_id?: string | null
           recipient?: string
@@ -333,7 +401,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_get_order: { Args: { p_order_id: string }; Returns: Json }
+      admin_register_order_shipment: {
+        Args: {
+          p_carrier?: string
+          p_order_identifier: string
+          p_replace_existing?: boolean
+          p_tracking_code: string
+        }
+        Returns: Json
+      }
+      admin_search_orders: {
+        Args: { p_limit?: number; p_offset?: number; p_query: string }
+        Returns: Json
+      }
       claim_customer_account: { Args: never; Returns: Json }
+      current_user_is_admin: { Args: never; Returns: boolean }
+      register_order_shipment: {
+        Args: {
+          p_carrier?: string
+          p_order_identifier: string
+          p_replace_existing?: boolean
+          p_tracking_code: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       email_status_enum:
