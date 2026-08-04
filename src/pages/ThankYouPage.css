@@ -1,0 +1,459 @@
+/* ==========================================================================
+   Página de Obrigado Pós-Pagamento (Thank You Page) — Plaud Note
+   Namespace exclusivo: .ty-* (Isolamento total de estilos)
+   ========================================================================== */
+
+.ty-page-wrapper {
+  min-height: 100vh;
+  background-color: #080c18;
+  background-image: radial-gradient(circle at 50% 0%, rgba(30, 45, 74, 0.45) 0%, rgba(8, 12, 24, 1) 85%);
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 16px 48px 16px;
+  box-sizing: border-box;
+}
+
+/* ===== CABEÇALHO MINIMALISTA ===== */
+.ty-header {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 0 24px 0;
+}
+
+.ty-logo-img {
+  height: 22px;
+  width: auto;
+  max-width: 130px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ===== CONTAINER PRINCIPAL ===== */
+.ty-container {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ===== CARD PRINCIPAL (BRANCO EDITORIAL) ===== */
+.ty-card {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-radius: 20px;
+  padding: 36px 24px 32px 24px;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+}
+
+@media (min-width: 600px) {
+  .ty-card {
+    padding: 44px 36px 36px 36px;
+  }
+}
+
+/* ===== HERO DE CONFIRMAÇÃO ===== */
+.ty-hero-section {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ty-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.ty-badge-icon {
+  width: 14px;
+  height: 14px;
+  color: #059669;
+  flex-shrink: 0;
+}
+
+.ty-hero-title {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  margin: 0 0 14px 0;
+}
+
+@media (min-width: 480px) {
+  .ty-hero-title {
+    font-size: 30px;
+  }
+}
+
+.ty-hero-subtitle {
+  font-size: 15px;
+  line-height: 1.55;
+  color: #334155;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  max-width: 480px;
+}
+
+.ty-hero-notice {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #64748b;
+  margin: 0 0 24px 0;
+  max-width: 460px;
+}
+
+/* Visual do Produto */
+.ty-product-box {
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto 12px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ty-product-img {
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.ty-product-tagline {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Divisores elegantes */
+.ty-divider {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 28px 0;
+  width: 100%;
+}
+
+/* ===== BLOCO EDITORIAL "AGORA É COM A GENTE" ===== */
+.ty-editorial-block {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 22px 20px;
+  margin-bottom: 28px;
+}
+
+.ty-editorial-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.2px;
+}
+
+.ty-editorial-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0;
+}
+
+/* ===== TIMELINE DE ACOMPANHAMENTO ===== */
+.ty-timeline-section {
+  margin-bottom: 32px;
+}
+
+.ty-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 20px 0;
+  letter-spacing: -0.3px;
+}
+
+.ty-timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.ty-timeline-item {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+
+.ty-timeline-marker-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+  width: 32px;
+}
+
+.ty-timeline-marker {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  box-sizing: border-box;
+  z-index: 2;
+  transition: transform 0.2s ease;
+}
+
+/* Estado 1: Concluído */
+.ty-timeline-marker.completed {
+  background-color: #047857;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(4, 120, 87, 0.3);
+}
+
+/* Estado 2: Ativo (Em preparação) */
+.ty-timeline-marker.active {
+  background-color: #ffffff;
+  border: 2.5px solid #047857;
+  color: #047857;
+  box-shadow: 0 0 0 4px #ecfdf5;
+}
+
+/* Estado 3 & 4: Futuro */
+.ty-timeline-marker.future {
+  background-color: #f8fafc;
+  border: 2px solid #cbd5e1;
+  color: #94a3b8;
+}
+
+.ty-timeline-connector {
+  width: 2px;
+  height: 36px;
+  background-color: #e2e8f0;
+  margin: 4px 0;
+}
+
+.ty-timeline-content {
+  padding-top: 5px;
+  padding-bottom: 24px;
+  flex: 1;
+}
+
+.ty-timeline-item:last-child .ty-timeline-content {
+  padding-bottom: 0;
+}
+
+.ty-timeline-step-name {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 3px;
+}
+
+.ty-timeline-step-name.completed {
+  color: #047857;
+}
+
+.ty-timeline-step-name.active {
+  color: #0f172a;
+}
+
+.ty-timeline-step-name.future {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.ty-timeline-step-desc {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ===== CARD DE ACOMPANHAMENTO ===== */
+.ty-action-card {
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (min-width: 480px) {
+  .ty-action-card {
+    padding: 28px 24px;
+  }
+}
+
+.ty-action-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.2px;
+}
+
+.ty-action-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #475569;
+  margin: 0 0 20px 0;
+  max-width: 420px;
+}
+
+.ty-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #0f172a;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  min-height: 48px;
+  width: 100%;
+  max-width: 320px;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  cursor: pointer;
+  border: none;
+}
+
+.ty-btn-primary:hover {
+  background-color: #1e293b;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
+}
+
+.ty-btn-primary:active {
+  transform: scale(0.985);
+}
+
+.ty-btn-primary:focus-visible {
+  outline: 2px solid #047857;
+  outline-offset: 2px;
+}
+
+.ty-link-secondary {
+  display: inline-block;
+  font-size: 13.5px;
+  color: #64748b;
+  text-decoration: none;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+  min-height: 44px;
+  line-height: 28px;
+}
+
+.ty-link-secondary:hover {
+  color: #0f172a;
+  text-decoration: underline;
+}
+
+.ty-link-secondary:focus-visible {
+  outline: 2px solid #0f172a;
+  outline-offset: 2px;
+}
+
+/* ===== ORIENTAÇÃO SOBRE O E-MAIL ===== */
+.ty-email-tips {
+  margin-top: 24px;
+  padding: 18px 20px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.ty-email-tips p {
+  margin: 0 0 6px 0;
+}
+
+.ty-email-tips p:last-child {
+  margin: 0;
+}
+
+.ty-email-tips strong {
+  color: #334155;
+}
+
+/* ===== RODAPÉ DA PÁGINA ===== */
+.ty-footer {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+  padding: 32px 16px 16px 16px;
+  color: #64748b;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.ty-footer-brand {
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.ty-footer-security {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.ty-footer-security-icon {
+  width: 12px;
+  height: 12px;
+  color: #10b981;
+}
+
+/* ===== ACESSIBILIDADE & PREFERS-REDUCED-MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  .ty-btn-primary,
+  .ty-timeline-marker,
+  .ty-link-secondary {
+    transition: none !important;
+    transform: none !important;
+  }
+}
