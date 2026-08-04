@@ -1208,32 +1208,72 @@ function App() {
         )}
       </section>
 
-      {/* ===== SECTION 03: Feature Cards ===== */}
-      <section className="feature-cards-section">
-        <div className="feature-card">
-          <h3>Plaud Intelligence</h3>
-          <p>Transcrição por IA em 112 idiomas, com identificação de falantes e vocabulário personalizado. Gere resumos com mais de 3.000 modelos, mapas mentais e integração com fluxos de trabalho.</p>
-        </div>
-        <div className="feature-card">
-          <h3>Segurança de dados</h3>
-          <p>Compatível com SOC 2, HIPAA, GDPR e EN 18031.</p>
-        </div>
-        <div className="feature-card">
-          <h3>Input multimodal</h3>
-          <p>Capture áudio, notas, imagens e destaques para fornecer um contexto mais rico.</p>
-        </div>
-        <div className="feature-card">
-          <h3>Resumos multidimensionais</h3>
-          <p>Transforme uma única conversa em múltiplos resumos específicos para cada função.</p>
-        </div>
-        <div className="feature-card">
-          <h3>Ultrafino e potente</h3>
-          <p>Com apenas 0,327 cm de espessura e 1,06 oz, oferece 30 horas de gravação, 60 dias de standby e 64 GB de armazenamento.</p>
-        </div>
-        <div className="feature-card">
-          <h3>Gravação em modo duplo</h3>
-          <p>Alterne facilmente entre gravação de chamadas telefônicas e gravação presencial.</p>
-        </div>
+      {/* ===== SECTION 03: Accordion (Um único assistente para todas as situações) ===== */}
+      <section className="accordion-section">
+        <h2>Um único assistente para todas as situações</h2>
+        
+        {[
+          {
+            id: 'chamadas',
+            title: 'Chamadas',
+            image: '/images/chamadas.webp',
+            heading: 'Grave chamadas sem esforço e não perca nenhum detalhe.',
+            content: 'Chega de se esforçar para lembrar de uma informação crucial. O PLAUD NOTE grava e transcreve chamadas instantaneamente, deixando você livre para focar 100% na conversa.'
+          },
+          {
+            id: 'reunioes',
+            title: 'Reuniões',
+            image: '/images/reunioes.webp',
+            heading: 'Pare de fazer anotações, comece a liderar a reunião.',
+            content: 'Participe ativamente da discussão enquanto o PLAUD NOTE captura, resume e organiza de forma visual as principais decisões, próximos passos e insights para você.'
+          },
+          {
+            id: 'entrevistas',
+            title: 'Entrevistas',
+            image: '/images/entrevistas.webp',
+            heading: 'Mantenha o contato visual, esqueça as anotações.',
+            content: 'Esteja totalmente presente em cada conversa enquanto o PLAUD NOTE entrega anotações profissionais da entrevista com todos os pontos-chave.'
+          },
+          {
+            id: 'aulas',
+            title: 'Aulas e palestras',
+            image: '/images/aulasepalestras.webp',
+            heading: 'Sua atenção no aprendizado, não no caderno.',
+            content: 'Finalmente absorva conhecimento sem nenhuma distração. O PLAUD NOTE cria anotações estruturadas e resumos visuais para facilitar seu entendimento.'
+          },
+          {
+            id: 'notas',
+            title: 'Notas de voz',
+            image: '/images/notasdevoz.webp',
+            heading: 'Fale suas ideias hoje, encontre-as para sempre.',
+            content: 'Grave seus pensamentos e deixe que a IA transcreva, resuma, organize e os torne pesquisáveis para sempre em seu arquivo pessoal.'
+          }
+        ].map(item => (
+          <div className="accordion-item" key={item.id}>
+            <button
+              className="accordion-header"
+              onClick={() => toggleAccordion(item.id)}
+              aria-expanded={openAccordion === item.id}
+              aria-controls={`accordion-${item.id}`}
+            >
+              <span>{item.title}</span>
+              <ChevronDown className={`accordion-arrow ${openAccordion === item.id ? 'open' : ''}`} />
+            </button>
+            <div
+              id={`accordion-${item.id}`}
+              className={`accordion-content ${openAccordion === item.id ? 'open' : ''}`}
+              role="region"
+            >
+              <div className="accordion-inner">
+                {item.image && (
+                  <img className="accordion-image" src={item.image} alt={item.title} />
+                )}
+                {item.heading && <h3>{item.heading}</h3>}
+                {item.content && <p>{item.content}</p>}
+              </div>
+            </div>
+          </div>
+        ))}
       </section>
 
       {/* ===== SECTION 04: Features Infographic ===== */}
@@ -1353,74 +1393,6 @@ function App() {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* ===== SECTION 08: Accordion ===== */}
-      <section className="accordion-section">
-        <h2>Um único assistente para todas as situações</h2>
-        
-        {[
-          {
-            id: 'chamadas',
-            title: 'Chamadas',
-            image: '/images/chamadas.webp',
-            heading: 'Grave chamadas sem esforço e não perca nenhum detalhe.',
-            content: 'Chega de se esforçar para lembrar de uma informação crucial. O PLAUD NOTE grava e transcreve chamadas instantaneamente, deixando você livre para focar 100% na conversa.'
-          },
-          {
-            id: 'reunioes',
-            title: 'Reuniões',
-            image: '/images/reunioes.webp',
-            heading: 'Pare de fazer anotações, comece a liderar a reunião.',
-            content: 'Participe ativamente da discussão enquanto o PLAUD NOTE captura, resume e organiza de forma visual as principais decisões, próximos passos e insights para você.'
-          },
-          {
-            id: 'entrevistas',
-            title: 'Entrevistas',
-            image: '/images/entrevistas.webp',
-            heading: 'Mantenha o contato visual, esqueça as anotações.',
-            content: 'Esteja totalmente presente em cada conversa enquanto o PLAUD NOTE entrega anotações profissionais da entrevista com todos os pontos-chave.'
-          },
-          {
-            id: 'aulas',
-            title: 'Aulas e palestras',
-            image: '/images/aulasepalestras.webp',
-            heading: 'Sua atenção no aprendizado, não no caderno.',
-            content: 'Finalmente absorva conhecimento sem nenhuma distração. O PLAUD NOTE cria anotações estruturadas e resumos visuais para facilitar seu entendimento.'
-          },
-          {
-            id: 'notas',
-            title: 'Notas de voz',
-            image: '/images/notasdevoz.webp',
-            heading: 'Fale suas ideias hoje, encontre-as para sempre.',
-            content: 'Grave seus pensamentos e deixe que a IA transcreva, resuma, organize e os torne pesquisáveis para sempre em seu arquivo pessoal.'
-          }
-        ].map(item => (
-          <div className="accordion-item" key={item.id}>
-            <button
-              className="accordion-header"
-              onClick={() => toggleAccordion(item.id)}
-              aria-expanded={openAccordion === item.id}
-              aria-controls={`accordion-${item.id}`}
-            >
-              <span>{item.title}</span>
-              <ChevronDown className={`accordion-arrow ${openAccordion === item.id ? 'open' : ''}`} />
-            </button>
-            <div
-              id={`accordion-${item.id}`}
-              className={`accordion-content ${openAccordion === item.id ? 'open' : ''}`}
-              role="region"
-            >
-              <div className="accordion-inner">
-                {item.image && (
-                  <img className="accordion-image" src={item.image} alt={item.title} />
-                )}
-                {item.heading && <h3>{item.heading}</h3>}
-                {item.content && <p>{item.content}</p>}
-              </div>
-            </div>
-          </div>
-        ))}
       </section>
 
       {/* ===== SECTION 09: PLAUD Intelligence ===== */}

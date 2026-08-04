@@ -1015,35 +1015,6 @@ ul {
   color: #1a1a1a;
 }
 
-/* ===== FEATURE CARDS ===== */
-.feature-cards-section {
-  padding: 8px var(--page-padding) 28px;
-}
-
-.feature-card {
-  background: var(--color-gray-card);
-  border-radius: var(--card-radius);
-  padding: 24px 22px;
-  margin-bottom: 16px;
-}
-
-.feature-card:last-child {
-  margin-bottom: 0;
-}
-
-.feature-card h3 {
-  font-size: 19px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 10px;
-  line-height: 1.3;
-}
-
-.feature-card p {
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--color-text-secondary);
-}
 
 /* ===== INFOGRAPHIC ===== */
 .infographic-section {
