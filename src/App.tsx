@@ -335,7 +335,7 @@ const SiteFooter = () => (
         <h4>Atendimento</h4>
         <p>Segunda à Sexta das 09h às 18h.</p>
         <p>+55 11 98933-9958</p>
-        <p>sac@plaudeai.site</p>
+        <p>sac@plaudai.site</p>
         <p style={{ marginTop: '12px' }}>
           <a href="/minha-conta" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 600 }}>
             📦 Acompanhar pedido
