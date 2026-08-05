@@ -52,6 +52,23 @@
         } catch (e) {}
       })();
     </script>
+    <!-- Preload seguro da imagem LCP condicionado à rota inicial da landing page -->
+    <script>
+      (function() {
+        try {
+          var p = window.location.pathname;
+          if (p === '/' || p === '' || p === '/index.html') {
+            var link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'image';
+            link.type = 'image/webp';
+            link.href = '/images/opcaofixa.webp';
+            link.setAttribute('fetchpriority', 'high');
+            document.head.appendChild(link);
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/images/favicon%20plaud.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="PLAUD Note - O gravador profissional com IA que vai maximizar sua produtividade. Transcrição por IA em 112 idiomas." />

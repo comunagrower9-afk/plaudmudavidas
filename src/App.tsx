@@ -741,7 +741,7 @@ function App() {
             window.scrollTo({ top: 0, behavior: 'smooth' })
           }}
         >
-          <img src="/images/logo.png" alt="PLAUD" />
+          <img src="/images/logo.png" alt="PLAUD" width={350} height={60} decoding="async" />
         </a>
         <div className="header-actions">
           <button
@@ -1052,6 +1052,11 @@ function App() {
                     src={img.src}
                     alt={img.alt}
                     className={img.isFixed ? 'img-opcaofixa' : ''}
+                    fetchPriority={i === 0 ? 'high' : undefined}
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                    decoding="async"
+                    width={img.isFixed ? 2300 : 2300}
+                    height={img.isFixed ? 1581 : 2300}
                   />
                 </div>
               ))}
@@ -1266,7 +1271,15 @@ function App() {
             >
               <div className="accordion-inner">
                 {item.image && (
-                  <img className="accordion-image" src={item.image} alt={item.title} />
+                  <img
+                    className="accordion-image"
+                    src={item.image}
+                    alt={item.title}
+                    loading="lazy"
+                    decoding="async"
+                    width={item.id === 'notas' ? 1200 : 1280}
+                    height={item.id === 'notas' ? 1064 : 1135}
+                  />
                 )}
                 {item.heading && <h3>{item.heading}</h3>}
                 {item.content && <p>{item.content}</p>}
@@ -1278,7 +1291,14 @@ function App() {
 
       {/* ===== SECTION 04: Features Infographic ===== */}
       <section className="infographic-section">
-        <img src="/images/features-infographic.png" alt="Funcionalidades do PLAUD Note - Assistente profissional de notas, modos de gravação, compatibilidade MagSafe, transcrição com IA, input multimodal, resumos multidimensionais, Ask Plaud, 112 idiomas, rótulos de falantes, vocabulário personalizado" />
+        <img
+          src="/images/features-infographic.webp"
+          alt="Funcionalidades do PLAUD Note - Assistente profissional de notas, modos de gravação, compatibilidade MagSafe, transcrição com IA, input multimodal, resumos multidimensionais, Ask Plaud, 112 idiomas, rótulos de falantes, vocabulário personalizado"
+          loading="lazy"
+          decoding="async"
+          width={750}
+          height={1600}
+        />
       </section>
 
       {/* ===== SECTION 05: Hero Headline ===== */}
@@ -1295,7 +1315,7 @@ function App() {
       <section className="specs-highlights">
         <div className="spec-highlight-card">
           <div className="spec-card-image">
-            <img src="/images/lp-60days.png" alt="Bateria 60 dias" />
+            <img src="/images/lp-60days.png" alt="Bateria 60 dias" loading="lazy" decoding="async" width={500} height={500} />
           </div>
           <div className="spec-card-content">
             <p className="spec-card-title">
@@ -1309,7 +1329,7 @@ function App() {
 
         <div className="spec-highlight-card">
           <div className="spec-card-image">
-            <img src="/images/lp-30hours.png" alt="Gravação contínua 30 horas" />
+            <img src="/images/lp-30hours.png" alt="Gravação contínua 30 horas" loading="lazy" decoding="async" width={500} height={500} />
           </div>
           <div className="spec-card-content">
             <p className="spec-card-title">
@@ -1322,7 +1342,7 @@ function App() {
 
         <div className="spec-highlight-card">
           <div className="spec-card-image">
-            <img src="/images/lp-light.png" alt="Ultra leve 30g" />
+            <img src="/images/lp-light.png" alt="Ultra leve 30g" loading="lazy" decoding="async" width={500} height={500} />
           </div>
           <div className="spec-card-content">
             <p className="spec-card-title">
@@ -1334,7 +1354,7 @@ function App() {
 
         <div className="spec-highlight-card">
           <div className="spec-card-image">
-            <img src="/images/lp-ultraslim.png" alt="Ultra fino 0,3cm" />
+            <img src="/images/lp-ultraslim.png" alt="Ultra fino 0,3cm" loading="lazy" decoding="async" width={500} height={500} />
           </div>
           <div className="spec-card-content">
             <p className="spec-card-title">
@@ -1347,7 +1367,7 @@ function App() {
 
         <div className="spec-highlight-card">
           <div className="spec-card-image">
-            <img src="/images/lp-64gb.png" alt="Armazenamento interno 64GB" />
+            <img src="/images/lp-64gb.png" alt="Armazenamento interno 64GB" loading="lazy" decoding="async" width={500} height={500} />
           </div>
           <div className="spec-card-content">
             <p className="spec-card-title">
@@ -1360,7 +1380,7 @@ function App() {
 
         <div className="spec-highlight-card">
           <div className="spec-card-image">
-            <img src="/images/lp-magsafe.png" alt="Compatível com MagSafe" />
+            <img src="/images/lp-magsafe.png" alt="Compatível com MagSafe" loading="lazy" decoding="async" width={500} height={500} />
           </div>
           <div className="spec-card-content">
             <p className="spec-card-title">
@@ -1379,14 +1399,14 @@ function App() {
         
         <div className="recording-mode-cards">
           <div className="recording-mode-card">
-            <img src="/images/callmode.webp" alt="Gravação de chamadas" />
+            <img src="/images/callmode.webp" alt="Gravação de chamadas" loading="lazy" decoding="async" width={1280} height={965} />
             <div className="recording-mode-overlay">
               <h3>Gravação de chamadas</h3>
               <p>Encaixa ao celular através da capa magnética para gravar as ligações.</p>
             </div>
           </div>
           <div className="recording-mode-card">
-            <img src="/images/presencial.webp" alt="Gravação presencial" />
+            <img src="/images/presencial.webp" alt="Gravação presencial" loading="lazy" decoding="async" width={1600} height={1207} />
             <div className="recording-mode-overlay">
               <h3>Gravação presencial</h3>
               <p>Captura o som ambiente, perfeito para gravar suas interações cara a cara.</p>
@@ -1440,22 +1460,22 @@ function App() {
         <div className="awards-grid">
           <div className="award-item">
             <div className="award-logo">
-              <img src="/images/logo-reddot.webp" alt="reddot winner 2024" />
+              <img src="/images/logo-reddot.webp" alt="reddot winner 2024" loading="lazy" decoding="async" width={1613} height={945} />
             </div>
           </div>
           <div className="award-item">
             <div className="award-logo">
-              <img src="/images/logo-if.webp" alt="iF Design Award 2024" />
+              <img src="/images/logo-if.webp" alt="iF Design Award 2024" loading="lazy" decoding="async" width={2306} height={1181} />
             </div>
           </div>
           <div className="award-item">
             <div className="award-logo">
-              <img src="/images/logo-gda.png" alt="Good Design Award" />
+              <img src="/images/logo-gda.png" alt="Good Design Award" loading="lazy" decoding="async" width={414} height={122} />
             </div>
           </div>
           <div className="award-item">
             <div className="award-logo">
-              <img src="/images/logo-idea.webp" alt="International Design Excellence Awards" />
+              <img src="/images/logo-idea.webp" alt="International Design Excellence Awards" loading="lazy" decoding="async" width={800} height={300} />
             </div>
           </div>
         </div>
@@ -1472,7 +1492,7 @@ function App() {
           <li>- 1 x guia de início rápido</li>
         </ul>
         <div className="box-image-container">
-          <img src="/images/plaud_note_oquevem.png" alt="Conteúdo da caixa PLAUD Note" />
+          <img src="/images/plaud_note_oquevem.png" alt="Conteúdo da caixa PLAUD Note" loading="lazy" decoding="async" width={1536} height={903} />
         </div>
       </section>
 
@@ -1635,7 +1655,7 @@ function App() {
                 {cartItems.map(item => (
                   <div className="cart-item" key={item.id}>
                     <div className="cart-item-img-box">
-                      <img src={item.image} alt={`${item.name} ${item.colorName}`} />
+                      <img src={item.image} alt={`${item.name} ${item.colorName}`} loading="lazy" decoding="async" width={2300} height={2300} />
                     </div>
 
                     <div className="cart-item-details">
