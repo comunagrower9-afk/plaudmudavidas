@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import './index.css'
+import { OFFERS, type OfferVariant, type ColorId } from './config/offers'
 
 const PRODUCT_COLORS = [
   { id: 'blue', name: 'Azul', hex: '#264e70' },
@@ -13,13 +14,6 @@ const COLOR_NAMES: Record<string, string> = {
   gray: 'Cinza',
   silver: 'Prata',
   starlight: 'Starlight',
-}
-
-const CHECKOUT_URLS_BY_COLOR: Record<string, string> = {
-  blue: 'https://checkout.plaudai.site/VCCL1O8SD7C1',
-  silver: 'https://checkout.plaudai.site/VCCL1O8SD7BX',
-  gray: 'https://checkout.plaudai.site/VCCL1O8SD7C0',
-  starlight: 'https://checkout.plaudai.site/VCCL1O8SD7BU',
 }
 
 /* ===== UTM & TRACKING PARAMETERS PROPAGATION ===== */
@@ -376,7 +370,41 @@ function addBusinessDays(startDate: Date, days: number): string {
 }
 
 /* ===== MAIN APP COMPONENT ===== */
-function App() {
+export interface AppProps {
+  variant?: OfferVariant
+}
+
+function App({ variant = 'standard' }: AppProps = {}) {
+  const offer = OFFERS[variant] || OFFERS.standard
+
+  useEffect(() => {
+    if (!offer.noindex) return
+
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    let createdMeta = false
+
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+      createdMeta = true
+    }
+    const previousRobotsContent = robotsMeta.getAttribute('content')
+    robotsMeta.setAttribute('content', 'noindex, nofollow, noarchive')
+
+    return () => {
+      if (robotsMeta) {
+        if (createdMeta) {
+          document.head.removeChild(robotsMeta)
+        } else if (previousRobotsContent) {
+          robotsMeta.setAttribute('content', previousRobotsContent)
+        } else {
+          robotsMeta.removeAttribute('content')
+        }
+      }
+    }
+  }, [offer.noindex])
+
   const [quantity, setQuantity] = useState(1)
   const [selectedColor, setSelectedColor] = useState('')
   const [openAccordion, setOpenAccordion] = useState('')
@@ -408,6 +436,15 @@ function App() {
   const cartBtnRef = useRef<HTMLButtonElement | null>(null)
   const headerRef = useRef<HTMLElement | null>(null)
 
+  /* Sincroniza o preço dos itens do carrinho com a oferta da rota atual */
+  useEffect(() => {
+    setCartItems(prev => {
+      const hasMismatch = prev.some(item => item.price !== offer.price)
+      if (!hasMismatch) return prev
+      return prev.map(item => ({ ...item, price: offer.price }))
+    })
+  }, [offer.price])
+
   const handleGoToCheckout = () => {
     setIsCartOpen(false)
     setCurrentView('checkout')
@@ -421,8 +458,8 @@ function App() {
   }
 
   const handleFinalizePurchase = () => {
-    const activeColorId = cartItems.length > 0 ? cartItems[0].colorId : (selectedColor || 'gray')
-    const rawRedirectUrl = CHECKOUT_URLS_BY_COLOR[activeColorId] || CHECKOUT_URLS_BY_COLOR.gray
+    const activeColorId = (cartItems.length > 0 ? cartItems[0].colorId : (selectedColor || 'gray')) as ColorId
+    const rawRedirectUrl = offer.checkoutUrlsByColor[activeColorId] || offer.checkoutUrlsByColor.gray
     const finalCheckoutUrl = buildCheckoutUrl(rawRedirectUrl)
     window.location.assign(finalCheckoutUrl)
   }
@@ -586,7 +623,7 @@ function App() {
             colorId,
             colorName,
             image: imageSrc,
-            price: 119.90,
+            price: offer.price,
             quantity: quantity,
           }]
         }
@@ -1011,7 +1048,7 @@ function App() {
           {/* Fixed Green Action Button at Bottom */}
           <div className="checkout-fixed-bottom">
             <a
-              href={buildCheckoutUrl(CHECKOUT_URLS_BY_COLOR[cartItems[0]?.colorId || selectedColor || 'gray'] || CHECKOUT_URLS_BY_COLOR.gray)}
+              href={buildCheckoutUrl(offer.checkoutUrlsByColor[(cartItems[0]?.colorId || selectedColor || 'gray') as ColorId] || offer.checkoutUrlsByColor.gray)}
               className="checkout-submit-btn"
               onClick={e => {
                 e.preventDefault()
@@ -1094,7 +1131,7 @@ function App() {
       <section className="pricing-section">
         <p className="price-original">De <span>R$268,90</span></p>
         <div className="price-pix">
-          <span className="price-value">R$119,90</span>
+          <span className="price-value">{formatCurrency(offer.price)}</span>
           <span className="price-label">no PIX</span>
         </div>
 
@@ -1600,7 +1637,7 @@ function App() {
               <span className="por-txt"> por:</span>
             </div>
             <div className="price-line-bottom">
-              <span className="pix-val">R$119,90</span>
+              <span className="pix-val">{formatCurrency(offer.price)}</span>
               <span className="pix-txt"> no PIX</span>
             </div>
           </div>

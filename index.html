@@ -52,12 +52,12 @@
         } catch (e) {}
       })();
     </script>
-    <!-- Preload seguro da imagem LCP condicionado à rota inicial da landing page -->
+    <!-- Preload seguro da imagem LCP condicionado às rotas de landing page (/ e /lpdesconto) -->
     <script>
       (function() {
         try {
           var p = window.location.pathname;
-          if (p === '/' || p === '' || p === '/index.html') {
+          if (p === '/' || p === '' || p === '/index.html' || p === '/lpdesconto' || p === '/lpdesconto/') {
             var link = document.createElement('link');
             link.rel = 'preload';
             link.as = 'image';

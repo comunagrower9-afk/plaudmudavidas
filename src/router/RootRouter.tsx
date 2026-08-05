@@ -34,7 +34,10 @@ export const RootRouter: React.FC = () => {
     <BrowserRouter>
       <Routes>
         {/* Landing Page Principal (Síncrona - Sem Waterfall) */}
-        <Route path="/" element={<App />} />
+        <Route path="/" element={<App variant="standard" />} />
+
+        {/* Landing Page Promocional (Síncrona - Reutiliza App com Oferta de R$ 86,90) */}
+        <Route path="/lpdesconto" element={<App variant="discount" />} />
 
         {/* Página de Obrigado Externa (Pós-Pagamento Checkout) */}
         <Route
