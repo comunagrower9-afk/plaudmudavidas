@@ -1,17 +1,16 @@
 import React, { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import App from '../App'
-import { CustomerLoginPage } from '../pages/customer/CustomerLoginPage'
-import { CustomerOrdersPage } from '../pages/customer/CustomerOrdersPage'
-import { CustomerOrderDetailPage } from '../pages/customer/CustomerOrderDetailPage'
-import { AdminLoginPage } from '../pages/admin/AdminLoginPage'
-import { AdminOrdersPage } from '../pages/admin/AdminOrdersPage'
-import { NotFoundPage } from '../pages/NotFoundPage'
-import { CustomerProtectedRoute } from '../components/auth/CustomerProtectedRoute'
-import { AdminProtectedRoute } from '../components/auth/AdminProtectedRoute'
-
-// Carregamento lazy da Página de Obrigado para otimização de bundle
+// Carregamento lazy de rotas secundárias e guards para otimização do bundle inicial da landing page
+const CustomerProtectedRoute = lazy(() => import('../components/auth/CustomerProtectedRoute').then(m => ({ default: m.CustomerProtectedRoute })))
+const AdminProtectedRoute = lazy(() => import('../components/auth/AdminProtectedRoute').then(m => ({ default: m.AdminProtectedRoute })))
 const ThankYouPage = lazy(() => import('../pages/ThankYouPage'))
+const CustomerLoginPage = lazy(() => import('../pages/customer/CustomerLoginPage').then(m => ({ default: m.CustomerLoginPage })))
+const CustomerOrdersPage = lazy(() => import('../pages/customer/CustomerOrdersPage').then(m => ({ default: m.CustomerOrdersPage })))
+const CustomerOrderDetailPage = lazy(() => import('../pages/customer/CustomerOrderDetailPage').then(m => ({ default: m.CustomerOrderDetailPage })))
+const AdminLoginPage = lazy(() => import('../pages/admin/AdminLoginPage').then(m => ({ default: m.AdminLoginPage })))
+const AdminOrdersPage = lazy(() => import('../pages/admin/AdminOrdersPage').then(m => ({ default: m.AdminOrdersPage })))
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })))
 
 const PageLoadingFallback: React.FC = () => (
   <div
@@ -26,7 +25,7 @@ const PageLoadingFallback: React.FC = () => (
       fontSize: '14px',
     }}
   >
-    Carregando confirmação...
+    Carregando...
   </div>
 )
 
@@ -34,7 +33,7 @@ export const RootRouter: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Landing Page Principal */}
+        {/* Landing Page Principal (Síncrona - Sem Waterfall) */}
         <Route path="/" element={<App />} />
 
         {/* Página de Obrigado Externa (Pós-Pagamento Checkout) */}
@@ -48,37 +47,64 @@ export const RootRouter: React.FC = () => {
         />
 
         {/* Portal do Cliente */}
-        <Route path="/entrar" element={<CustomerLoginPage />} />
+        <Route
+          path="/entrar"
+          element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <CustomerLoginPage />
+            </Suspense>
+          }
+        />
         <Route
           path="/minha-conta"
           element={
-            <CustomerProtectedRoute>
-              <CustomerOrdersPage />
-            </CustomerProtectedRoute>
+            <Suspense fallback={<PageLoadingFallback />}>
+              <CustomerProtectedRoute>
+                <CustomerOrdersPage />
+              </CustomerProtectedRoute>
+            </Suspense>
           }
         />
         <Route
           path="/minha-conta/pedidos/:orderId"
           element={
-            <CustomerProtectedRoute>
-              <CustomerOrderDetailPage />
-            </CustomerProtectedRoute>
+            <Suspense fallback={<PageLoadingFallback />}>
+              <CustomerProtectedRoute>
+                <CustomerOrderDetailPage />
+              </CustomerProtectedRoute>
+            </Suspense>
           }
         />
 
         {/* Painel Administrativo */}
-        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route
+          path="/admin/login"
+          element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <AdminLoginPage />
+            </Suspense>
+          }
+        />
         <Route
           path="/admin/pedidos"
           element={
-            <AdminProtectedRoute>
-              <AdminOrdersPage />
-            </AdminProtectedRoute>
+            <Suspense fallback={<PageLoadingFallback />}>
+              <AdminProtectedRoute>
+                <AdminOrdersPage />
+              </AdminProtectedRoute>
+            </Suspense>
           }
         />
 
         {/* Rota 404 */}
-        <Route path="*" element={<NotFoundPage />} />
+        <Route
+          path="*"
+          element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <NotFoundPage />
+            </Suspense>
+          }
+        />
       </Routes>
     </BrowserRouter>
   )

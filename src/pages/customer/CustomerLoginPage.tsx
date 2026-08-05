@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { OtpAuthForm } from '../../components/auth/OtpAuthForm'
 import { supabase } from '../../lib/supabase'
 import { isClaimCustomerResult } from '../../types/portal.types'
+import '../../styles/portal.css'
 
 export const CustomerLoginPage: React.FC = () => {
   const navigate = useNavigate()

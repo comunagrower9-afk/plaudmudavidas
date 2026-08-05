@@ -308,7 +308,7 @@ const SiteNewsletter = ({ email, setEmail }: { email: string; setEmail: (val: st
 const SiteFooter = () => (
   <footer className="footer">
     <div className="footer-logo">
-      <img src="/images/logo.png" alt="PLAUD" />
+      <img src="/images/logo.png" alt="PLAUD" loading="lazy" decoding="async" width={350} height={60} />
     </div>
     
     <div className="footer-columns">
@@ -334,8 +334,8 @@ const SiteFooter = () => (
       <div className="footer-column">
         <h4>Atendimento</h4>
         <p>Segunda à Sexta das 09h às 18h.</p>
-        <p>+55 11 98932-9358</p>
-        <p>sac@plaud.com.br</p>
+        <p>+55 11 98933-9958</p>
+        <p>sac@plaudeai.site</p>
         <p style={{ marginTop: '12px' }}>
           <a href="/minha-conta" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 600 }}>
             📦 Acompanhar pedido
@@ -820,7 +820,7 @@ function App() {
                 {cartItems.map(item => (
                   <div className="checkout-item" key={item.id}>
                     <div className="checkout-item-img-box">
-                      <img src={item.image} alt={`${item.name} ${item.colorName}`} />
+                      <img src={item.image} alt={`${item.name} ${item.colorName}`} loading="lazy" decoding="async" width={2300} height={2300} />
                     </div>
 
                     <div className="checkout-item-info">

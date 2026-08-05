@@ -12,6 +12,7 @@ import {
   validateShippingAddress,
   formatAddressNumber,
 } from '../../lib/portal-utils'
+import '../../styles/portal.css'
 
 const TIMELINE_STEPS = [
   { key: 'unfulfilled', label: 'Pedido confirmado' },

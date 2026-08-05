@@ -22,6 +22,7 @@ import {
   validateShippingAddress,
   formatAddressNumber,
 } from '../../lib/portal-utils'
+import '../../styles/portal.css'
 
 const PAGE_SIZE = 15
 

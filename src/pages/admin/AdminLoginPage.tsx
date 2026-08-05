@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { OtpAuthForm } from '../../components/auth/OtpAuthForm'
 import { useAuth } from '../../context/AuthContext'
+import '../../styles/portal.css'
 
 export const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate()

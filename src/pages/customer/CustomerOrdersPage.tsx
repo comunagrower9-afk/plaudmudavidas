@@ -10,6 +10,7 @@ import {
   getFulfillmentStatusLabel,
   getPaymentStatusLabel,
 } from '../../lib/portal-utils'
+import '../../styles/portal.css'
 
 export const CustomerOrdersPage: React.FC = () => {
   const { user, signOut } = useAuth()

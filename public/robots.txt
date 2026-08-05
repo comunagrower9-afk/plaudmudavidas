@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /obrigado
+Disallow: /entrar
+Disallow: /minha-conta
+Disallow: /admin
