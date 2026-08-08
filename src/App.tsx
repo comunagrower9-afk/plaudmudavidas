@@ -923,7 +923,7 @@ function App({ variant = 'standard' }: AppProps = {}) {
                 </header>
 
                 <div className="review-hero-body">
-                  <span className="review-editorial-badge">01 — REVISÃO</span>
+                  <span className="review-editorial-badge">REVISÃO</span>
                   <h1 className="review-title review-hero-headline">Seu novo PLAUD está pronto.</h1>
                   <p className="review-hero-subtitle">
                     Confira a cor e a quantidade antes de seguir para entrega e pagamento.
