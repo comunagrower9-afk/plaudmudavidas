@@ -1046,7 +1046,7 @@ function App({ variant = 'standard' }: AppProps = {}) {
                   <section className="review-sheet-section review-next-step-box" aria-label="Próxima etapa">
                     <span className="review-next-step-eyebrow">PRÓXIMA ETAPA</span>
                     <p className="review-next-step-text">
-                      Informe os dados de entrega e escolha Pix ou cartão no ambiente seguro de pagamento.
+                      Informe os dados de entrega e finalize seu pagamento via Pix no ambiente seguro.
                     </p>
                     <div className="review-next-step-progress" aria-label="Etapas da compra">
                       <span className="step-current">Revisão</span>
