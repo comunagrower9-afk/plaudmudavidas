@@ -334,7 +334,8 @@ const SiteFooter = () => (
   </footer>
 )
 
-function addBusinessDays(startDate: Date, days: number): string {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function addBusinessDays(startDate: Date, days: number): string {
   const cur = new Date(startDate)
   let added = 0
   while (added < days) {
@@ -399,15 +400,12 @@ function App({ variant = 'standard' }: AppProps = {}) {
 
   /* Cart & Flying Particle States */
   const [currentView, setCurrentView] = useState<'product' | 'checkout'>('product')
-  const [coupon, setCoupon] = useState('')
-  const [affiliate, setAffiliate] = useState('')
 
-  /* Checkout Freight States */
-  const [checkoutCep, setCheckoutCep] = useState('')
-  const [checkoutCepLoading, setCheckoutCepLoading] = useState(false)
-  const [checkoutCepError, setCheckoutCepError] = useState<string | null>(null)
-  const [checkoutAddressData, setCheckoutAddressData] = useState<{ logradouro: string; bairro: string; localidade: string; uf: string } | null>(null)
-  const [selectedShippingMethod, setSelectedShippingMethod] = useState<'free' | 'express'>('free')
+  /* Review page states */
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  const [showReviewStickyBar, setShowReviewStickyBar] = useState(false)
+  const reviewCtaRef = useRef<HTMLButtonElement | null>(null)
+  const viewCartFiredRef = useRef(false)
 
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -428,78 +426,111 @@ function App({ variant = 'standard' }: AppProps = {}) {
   const handleGoToCheckout = () => {
     setIsCartOpen(false)
     setCurrentView('checkout')
-    if (cep && !checkoutCep) {
-      setCheckoutCep(cep)
-      if (addressData) {
-        setCheckoutAddressData(addressData)
-      }
-    }
     window.scrollTo({ top: 0, behavior: 'smooth' })
+
+    // Fire ViewCart once per session when entering review
+    if (!viewCartFiredRef.current) {
+      viewCartFiredRef.current = true
+      try {
+        const fbq = (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq
+        if (typeof fbq === 'function') {
+          fbq('track', 'ViewContent', {
+            content_type: 'product',
+            content_name: 'Plaud Note',
+            currency: 'BRL',
+            value: subtotal,
+          })
+        }
+      } catch { /* ignore */ }
+    }
   }
 
-  const handleFinalizePurchase = () => {
+  const handleContinueToCheckout = () => {
+    if (isRedirecting || cartItems.length === 0) return
+    setIsRedirecting(true)
+
+    // Fire InitiateCheckout once
+    try {
+      const fbq = (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq
+      if (typeof fbq === 'function') {
+        fbq('track', 'InitiateCheckout', {
+          content_type: 'product',
+          content_name: 'Plaud Note',
+          currency: 'BRL',
+          value: subtotal,
+          num_items: cartCount,
+        })
+      }
+    } catch { /* ignore */ }
+
+    // Redirect to Vega checkout
     const activeColorId = (cartItems.length > 0 ? cartItems[0].colorId : (selectedColor || 'gray')) as ColorId
     const rawRedirectUrl = offer.checkoutUrlsByColor[activeColorId] || offer.checkoutUrlsByColor.gray
     const finalCheckoutUrl = buildCheckoutUrl(rawRedirectUrl)
+
+    // 5s timeout recovery if redirect fails
+    const recoveryTimer = setTimeout(() => {
+      setIsRedirecting(false)
+    }, 5000)
+
     window.location.assign(finalCheckoutUrl)
+
+    // Cleanup if component unmounts
+    return () => clearTimeout(recoveryTimer)
   }
 
-  const handleCheckoutCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value.replace(/\D/g, '')
-    if (val.length > 8) val = val.slice(0, 8)
-    if (val.length > 5) {
-      val = `${val.slice(0, 5)}-${val.slice(5)}`
-    }
-    setCheckoutCep(val)
-    if (checkoutCepError) setCheckoutCepError(null)
-  }
-
-  const handleFetchCheckoutCep = async () => {
-    const rawCep = checkoutCep.replace(/\D/g, '')
-    if (rawCep.length !== 8) {
-      setCheckoutCepError('Por favor, digite um CEP válido com 8 dígitos.')
-      setCheckoutAddressData(null)
+  /* Review page sticky bar via IntersectionObserver + Scroll check */
+  useEffect(() => {
+    if (currentView !== 'checkout') {
+      setShowReviewStickyBar(false)
       return
     }
 
-    setCheckoutCepLoading(true)
-    setCheckoutCepError(null)
-
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${rawCep}/json/`)
-      const data = await res.json()
-
-      if (data.erro) {
-        setCheckoutCepError('CEP não encontrado. Verifique o número e tente novamente.')
-        setCheckoutAddressData(null)
-      } else {
-        setCheckoutAddressData({
-          logradouro: data.logradouro || '',
-          bairro: data.bairro || '',
-          localidade: data.localidade || '',
-          uf: data.uf || '',
-        })
-      }
-    } catch (err) {
-      setCheckoutCepError('Não foi possível consultar o CEP no momento. Tente novamente.')
-      setCheckoutAddressData(null)
-    } finally {
-      setCheckoutCepLoading(false)
+    if (typeof IntersectionObserver === 'undefined') {
+      setShowReviewStickyBar(true)
+      return
     }
-  }
 
-  const handleCheckoutCepKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleFetchCheckoutCep()
+    const checkVisibility = () => {
+      if (!reviewCtaRef.current) return
+      const rect = reviewCtaRef.current.getBoundingClientRect()
+      // Only show sticky bar when main CTA is below the viewport
+      const isBelowViewport = rect.top > window.innerHeight
+      setShowReviewStickyBar(isBelowViewport)
     }
-  }
+
+    // Initial check
+    checkVisibility()
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShowReviewStickyBar(false)
+        } else {
+          const isBelow = entry.boundingClientRect.top > 0
+          setShowReviewStickyBar(isBelow)
+        }
+      },
+      { threshold: 0 }
+    )
+
+    if (reviewCtaRef.current) {
+      observer.observe(reviewCtaRef.current)
+    }
+
+    window.addEventListener('scroll', checkVisibility, { passive: true })
+    window.addEventListener('resize', checkVisibility, { passive: true })
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('scroll', checkVisibility)
+      window.removeEventListener('resize', checkVisibility)
+    }
+  }, [currentView])
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const discount = 0
-  const shippingCost = checkoutAddressData ? (selectedShippingMethod === 'express' ? 25.90 : 0) : 0
-  const cartTotal = subtotal - discount
-  const checkoutTotal = subtotal - discount + shippingCost
+  const cartTotal = subtotal
 
   const formatCurrency = (val: number) => {
     return 'R$' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -743,301 +774,372 @@ function App({ variant = 'standard' }: AppProps = {}) {
   return (
     <div className="page-wrapper">
       {/* ===== SECTION 01: Announcement Bar + Header ===== */}
-      <div className="announcement-bar">
-        A marca número 1 no mundo de gravadores de IA.
-      </div>
+      {currentView !== 'checkout' && (
+        <div className="announcement-bar">
+          A marca número 1 no mundo de gravadores de IA.
+        </div>
+      )}
 
-      <header ref={headerRef} className="header">
-        <a
-          href="#"
-          className="header-logo"
-          onClick={e => {
-            e.preventDefault()
-            setIsHeaderMenuOpen(false)
-            setCurrentView('product')
-            window.scrollTo({ top: 0, behavior: 'smooth' })
-          }}
-        >
-          <img src="/images/logo.png" alt="PLAUD" width={350} height={60} decoding="async" />
-        </a>
-        <div className="header-actions">
-          <button
-            type="button"
-            className="header-icon"
-            aria-label="Buscar"
-            onClick={() => setIsHeaderMenuOpen(false)}
-          >
-            <SearchIcon />
-          </button>
-          <button
-            type="button"
-            ref={cartBtnRef}
-            className={`header-icon cart-btn ${isCartPopping ? 'pop' : ''}`}
-            aria-label="Carrinho"
-            onClick={() => {
+      {currentView !== 'checkout' && (
+        <header ref={headerRef} className="header">
+          <a
+            href="#"
+            className="header-logo"
+            onClick={e => {
+              e.preventDefault()
               setIsHeaderMenuOpen(false)
-              setIsCartOpen(true)
+              setCurrentView('product')
+              window.scrollTo({ top: 0, behavior: 'smooth' })
             }}
           >
-            <CartIcon />
-            {cartCount > 0 && (
-              <span className={`cart-count-badge ${isCartPopping ? 'badge-pop' : ''}`}>
-                {cartCount}
-              </span>
-            )}
-          </button>
-          <button
-            type="button"
-            className="header-icon header-menu-toggle"
-            aria-label={isHeaderMenuOpen ? 'Fechar menu' : 'Abrir menu'}
-            aria-expanded={isHeaderMenuOpen}
-            aria-controls="header-quick-menu"
-            onClick={() => setIsHeaderMenuOpen(open => !open)}
-          >
-            <MenuIcon />
-          </button>
-        </div>
-
-        {isHeaderMenuOpen && (
-          <nav
-            id="header-quick-menu"
-            className="header-quick-menu"
-            aria-label="Acesso rápido"
-          >
-            <a
-              href="/minha-conta"
-              className="header-quick-menu-link"
+            <img src="/images/logo.png" alt="PLAUD" width={350} height={60} decoding="async" />
+          </a>
+          <div className="header-actions">
+            <button
+              type="button"
+              className="header-icon"
+              aria-label="Buscar"
               onClick={() => setIsHeaderMenuOpen(false)}
             >
-              <span className="header-quick-menu-copy">
-                <span className="header-quick-menu-eyebrow">Área do cliente</span>
-                <span className="header-quick-menu-title">Acompanhar pedido</span>
-              </span>
-              <span className="header-quick-menu-arrow" aria-hidden="true">
-                <ArrowRight />
-              </span>
-            </a>
-          </nav>
-        )}
-      </header>
-
-      {currentView === 'checkout' ? (
-        /* ===== CHECKOUT VIEW (100% fiel à referência) ===== */
-        <div className="checkout-page-container">
-          <div className="checkout-content">
-            {/* Card 1: Meu carrinho */}
-            <div className="checkout-card">
-              <div className="checkout-card-header">
-                <h2 className="checkout-card-title">
-                  Meu carrinho <span className="checkout-count">({cartCount})</span>
-                </h2>
-              </div>
-
-              <div className="checkout-items-list">
-                {cartItems.map(item => (
-                  <div className="checkout-item" key={item.id}>
-                    <div className="checkout-item-img-box">
-                      <img src={item.image} alt={`${item.name} ${item.colorName}`} loading="lazy" decoding="async" width={2300} height={2300} />
-                    </div>
-
-                    <div className="checkout-item-info">
-                      <div className="checkout-item-top">
-                        <div>
-                          <h3 className="checkout-item-title">{item.name}</h3>
-                          <p className="checkout-item-color">{item.colorName}</p>
-                        </div>
-                        <button
-                          className="checkout-item-close-btn"
-                          onClick={() => {
-                            removeCartItem(item.colorId)
-                            if (cartItems.length <= 1) {
-                              setCurrentView('product')
-                            }
-                          }}
-                          aria-label="Remover item"
-                        >
-                          <CloseIcon />
-                        </button>
-                      </div>
-
-                      <div className="checkout-prices-grid">
-                        <div className="price-col">
-                          <span className="price-label-sm">Valor unitário</span>
-                          <span className="price-val-unit">{formatCurrency(item.price)}</span>
-                        </div>
-                        <div className="price-col price-col-right">
-                          <span className="price-label-sm">Valor parcial</span>
-                          <span className="price-val-partial">{formatCurrency(item.price * item.quantity)}</span>
-                        </div>
-                      </div>
-
-                      <div className="checkout-item-bottom">
-                        <div className="checkout-qty-control">
-                          <button
-                            className="checkout-qty-btn"
-                            onClick={() => {
-                              updateCartQty(item.colorId, -1)
-                              if (item.quantity === 1 && cartItems.length === 1) {
-                                setCurrentView('product')
-                              }
-                            }}
-                            aria-label="Diminuir quantidade"
-                          >
-                            −
-                          </button>
-                          <span className="checkout-qty-val">{item.quantity}</span>
-                          <button
-                            className="checkout-qty-btn"
-                            onClick={() => updateCartQty(item.colorId, 1)}
-                            aria-label="Aumentar quantidade"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Card 2: Resumo da compra */}
-            <div className="checkout-card">
-              <div className="checkout-card-header">
-                <h2 className="checkout-card-title">Resumo da compra</h2>
-              </div>
-
-              <div className="checkout-summary-body">
-                <div className="checkout-summary-row">
-                  <span className="summary-text">Subtotal</span>
-                  <span className="summary-value">{formatCurrency(subtotal)}</span>
-                </div>
-
-                <div className="checkout-input-row">
-                  <span className="input-row-label">Cupom</span>
-                  <div className="input-group">
-                    <input
-                      type="text"
-                      placeholder="opcional"
-                      value={coupon}
-                      onChange={e => setCoupon(e.target.value)}
-                    />
-                    <button type="button" className="input-group-btn">Aplicar</button>
-                  </div>
-                </div>
-
-                <div className="checkout-input-row">
-                  <span className="input-row-label">Afiliado</span>
-                  <div className="input-group">
-                    <input
-                      type="text"
-                      placeholder="opcional"
-                      value={affiliate}
-                      onChange={e => setAffiliate(e.target.value)}
-                    />
-                    <button type="button" className="input-group-btn">Aplicar</button>
-                  </div>
-                </div>
-
-                <div className="checkout-input-row">
-                  <span className="input-row-label">Frete</span>
-                  <div className="input-group">
-                    <input
-                      type="text"
-                      placeholder="CEP"
-                      value={checkoutCep}
-                      onChange={handleCheckoutCepChange}
-                      onKeyDown={handleCheckoutCepKeyDown}
-                      maxLength={9}
-                    />
-                    <button
-                      type="button"
-                      className="input-group-btn"
-                      onClick={handleFetchCheckoutCep}
-                      disabled={checkoutCepLoading}
-                    >
-                      {checkoutCepLoading ? '...' : 'Calcular'}
-                    </button>
-                  </div>
-                </div>
-
-                {checkoutCepError && (
-                  <p className="checkout-cep-error">{checkoutCepError}</p>
-                )}
-
-                {checkoutAddressData && (
-                  <div className="checkout-shipping-options">
-                    <div
-                      className={`checkout-shipping-option ${selectedShippingMethod === 'free' ? 'selected' : ''}`}
-                      onClick={() => setSelectedShippingMethod('free')}
-                    >
-                      <div className="checkout-shipping-checkbox">
-                        {selectedShippingMethod === 'free' && (
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
-                      <div className="checkout-shipping-info">
-                        <span className="checkout-shipping-name">Frete Grátis</span>
-                        <span className="checkout-shipping-estimate">
-                          até 10 dias úteis ({addBusinessDays(new Date(), 10)})
-                        </span>
-                      </div>
-                      <span className="checkout-shipping-price">R$0,00</span>
-                    </div>
-
-                    <div
-                      className={`checkout-shipping-option ${selectedShippingMethod === 'express' ? 'selected' : ''}`}
-                      onClick={() => setSelectedShippingMethod('express')}
-                    >
-                      <div className="checkout-shipping-checkbox">
-                        {selectedShippingMethod === 'express' && (
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
-                      <div className="checkout-shipping-info">
-                        <span className="checkout-shipping-name">Frete Expresso</span>
-                        <span className="checkout-shipping-estimate">
-                          até 4 dias úteis ({addBusinessDays(new Date(), 4)})
-                        </span>
-                      </div>
-                      <span className="checkout-shipping-price">R$25,90</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="checkout-card-divider" />
-
-                <div className="checkout-total-row">
-                  <span className="total-text">Total</span>
-                  <span className="total-value">{formatCurrency(checkoutTotal)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Newsletter on Checkout */}
-          <SiteNewsletter email={email} setEmail={setEmail} />
-
-          {/* Site Footer on Checkout */}
-          <SiteFooter />
-
-          {/* Fixed Green Action Button at Bottom */}
-          <div className="checkout-fixed-bottom">
-            <a
-              href={buildCheckoutUrl(offer.checkoutUrlsByColor[(cartItems[0]?.colorId || selectedColor || 'gray') as ColorId] || offer.checkoutUrlsByColor.gray)}
-              className="checkout-submit-btn"
-              onClick={e => {
-                e.preventDefault()
-                handleFinalizePurchase()
+              <SearchIcon />
+            </button>
+            <button
+              type="button"
+              ref={cartBtnRef}
+              className={`header-icon cart-btn ${isCartPopping ? 'pop' : ''}`}
+              aria-label="Carrinho"
+              onClick={() => {
+                setIsHeaderMenuOpen(false)
+                setIsCartOpen(true)
               }}
             >
-              Finalizar compra
-            </a>
+              <CartIcon />
+              {cartCount > 0 && (
+                <span className={`cart-count-badge ${isCartPopping ? 'badge-pop' : ''}`}>
+                  {cartCount}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              className="header-icon header-menu-toggle"
+              aria-label={isHeaderMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+              aria-expanded={isHeaderMenuOpen}
+              aria-controls="header-quick-menu"
+              onClick={() => setIsHeaderMenuOpen(open => !open)}
+            >
+              <MenuIcon />
+            </button>
           </div>
+
+          {isHeaderMenuOpen && (
+            <nav
+              id="header-quick-menu"
+              className="header-quick-menu"
+              aria-label="Acesso rápido"
+            >
+              <a
+                href="/minha-conta"
+                className="header-quick-menu-link"
+                onClick={() => setIsHeaderMenuOpen(false)}
+              >
+                <span className="header-quick-menu-copy">
+                  <span className="header-quick-menu-eyebrow">Área do cliente</span>
+                  <span className="header-quick-menu-title">Acompanhar pedido</span>
+                </span>
+                <span className="header-quick-menu-arrow" aria-hidden="true">
+                  <ArrowRight />
+                </span>
+              </a>
+            </nav>
+          )}
+        </header>
+      )}
+
+      {currentView === 'checkout' ? (
+        /* ===== ORDER REVIEW PAGE ===== */
+        <div className="review-page">
+          {cartItems.length === 0 ? (
+            /* Empty state */
+            <div className="review-empty-container">
+              <header className="review-header review-navy-header">
+                <button
+                  type="button"
+                  className="review-back-btn"
+                  onClick={() => {
+                    setCurrentView('product')
+                    setIsRedirecting(false)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  aria-label="Voltar para o produto"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                  Voltar
+                </button>
+                <img src="/images/logo-branco.png" alt="PLAUD" className="review-navy-logo" width={120} height={24} decoding="async" />
+                <div className="review-header-spacer" aria-hidden="true" />
+              </header>
+
+              <div className="review-empty-content">
+                <div className="review-empty-icon" aria-hidden="true">📦</div>
+                <h1 className="review-empty-title">Seu carrinho está vazio</h1>
+                <p className="review-empty-text">Adicione o Plaud Note para continuar seu pedido.</p>
+                <button
+                  type="button"
+                  className="review-empty-btn"
+                  onClick={() => {
+                    setCurrentView('product')
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                >
+                  Ver produto
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="review-layout-grid">
+              {/* ===== HERO NAVY CINEMATOGRÁFICO ===== */}
+              <section className="review-hero-navy">
+                <header className="review-header review-navy-header">
+                  <button
+                    type="button"
+                    className="review-back-btn"
+                    onClick={() => {
+                      setCurrentView('product')
+                      setIsRedirecting(false)
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}
+                    aria-label="Voltar para o produto"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    Voltar
+                  </button>
+                  <img src="/images/logo-branco.png" alt="PLAUD" className="review-navy-logo" width={120} height={24} decoding="async" />
+                  <div className="review-header-spacer" aria-hidden="true" />
+                </header>
+
+                <div className="review-hero-body">
+                  <span className="review-editorial-badge">01 — REVISÃO</span>
+                  <h1 className="review-title review-hero-headline">Seu novo PLAUD está pronto.</h1>
+                  <p className="review-hero-subtitle">
+                    Confira a cor e a quantidade antes de seguir para entrega e pagamento.
+                  </p>
+
+                  {/* Large protagonist product */}
+                  <div className="review-hero-product-showcase">
+                    <img
+                      src={cartItems[0]?.image || '/images/1.webp'}
+                      alt={`Plaud Note ${cartItems[0]?.colorName || ''}`}
+                      className="review-hero-product-img"
+                      width={460}
+                      height={460}
+                      decoding="async"
+                    />
+                  </div>
+
+                  <div className="review-hero-product-meta">
+                    <h2 className="review-hero-product-name">PLAUD NOTE</h2>
+                    <p className="review-hero-product-variant">
+                      {cartItems[0]?.colorName?.toUpperCase()} · {cartItems.reduce((acc, i) => acc + i.quantity, 0)} {cartItems.reduce((acc, i) => acc + i.quantity, 0) > 1 ? 'UNIDADES' : 'UNIDADE'}
+                    </p>
+                    <p className="review-hero-motto">GRAVE · TRANSCREVA · ORGANIZE</p>
+                  </div>
+                </div>
+              </section>
+
+              {/* ===== FOLHA BRANCA SOBREPOSTA ===== */}
+              <div className="review-white-sheet">
+                <div className="review-sheet-inner">
+                  {/* Linha do produto */}
+                  <section className="review-sheet-section" aria-label="Detalhes do pedido">
+                    <h2 className="review-sheet-eyebrow">DETALHES DO PEDIDO</h2>
+
+                    <div className="review-items-list">
+                      {cartItems.map(item => (
+                        <article className="review-item-row" key={item.id} aria-label={`Produto: ${item.name} ${item.colorName}`}>
+                          <div className="review-item-thumb">
+                            <img
+                              src={item.image}
+                              alt={`${item.name} — ${item.colorName}`}
+                              width={144}
+                              height={144}
+                              decoding="async"
+                            />
+                          </div>
+
+                          <div className="review-item-info">
+                            <h3 className="review-item-name">{item.name}</h3>
+                            <p className="review-item-color">{item.colorName}</p>
+
+                            <div className="review-qty-control" role="group" aria-label="Quantidade">
+                              <button
+                                type="button"
+                                className="review-qty-btn"
+                                onClick={() => {
+                                  updateCartQty(item.colorId, -1)
+                                  if (item.quantity === 1 && cartItems.length === 1) {
+                                    setCurrentView('product')
+                                  }
+                                }}
+                                disabled={item.quantity <= 1 && cartItems.length <= 1}
+                                aria-label="Diminuir quantidade"
+                              >
+                                −
+                              </button>
+                              <span className="review-qty-val" aria-live="polite">{item.quantity}</span>
+                              <button
+                                type="button"
+                                className="review-qty-btn"
+                                onClick={() => updateCartQty(item.colorId, 1)}
+                                disabled={item.quantity >= 10}
+                                aria-label="Aumentar quantidade"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="review-item-price-col">
+                            <span className="review-item-price">{formatCurrency(item.price * item.quantity)}</span>
+                            <button
+                              type="button"
+                              className="review-remove-link"
+                              onClick={() => {
+                                removeCartItem(item.colorId)
+                                if (cartItems.length <= 1) {
+                                  setCurrentView('product')
+                                }
+                              }}
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+
+                  {/* Resumo Financeiro */}
+                  <section className="review-sheet-section review-summary-section" aria-label="Resumo financeiro">
+                    <div className="review-summary-rows">
+                      <div className="review-summary-row">
+                        <span className="review-summary-label">Subtotal</span>
+                        <span className="review-summary-value">{formatCurrency(subtotal)}</span>
+                      </div>
+                      <div className="review-summary-row">
+                        <span className="review-summary-label">Frete</span>
+                        <span className="review-summary-value freight-note">Calculado na próxima etapa</span>
+                      </div>
+                      <div className="review-summary-divider" />
+                      <div className="review-summary-row review-total-row">
+                        <span className="review-summary-label">TOTAL</span>
+                        <span className="review-summary-value">{formatCurrency(subtotal)}</span>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Próxima Etapa */}
+                  <section className="review-sheet-section review-next-step-box" aria-label="Próxima etapa">
+                    <span className="review-next-step-eyebrow">PRÓXIMA ETAPA</span>
+                    <p className="review-next-step-text">
+                      Informe os dados de entrega e escolha Pix ou cartão no ambiente seguro de pagamento.
+                    </p>
+                    <div className="review-next-step-progress" aria-label="Etapas da compra">
+                      <span className="step-current">Revisão</span>
+                      <span className="step-arrow">→</span>
+                      <span className="step-future">Entrega</span>
+                      <span className="step-arrow">→</span>
+                      <span className="step-future">Pagamento</span>
+                    </div>
+                  </section>
+
+                  {/* CTA de Marca */}
+                  <section className="review-cta-section" aria-label="Ação principal">
+                    <button
+                      type="button"
+                      ref={reviewCtaRef}
+                      className={`review-cta-btn checkout-submit-btn${isRedirecting ? ' loading' : ''}`}
+                      onClick={handleContinueToCheckout}
+                      disabled={isRedirecting || cartItems.length === 0}
+                      aria-busy={isRedirecting}
+                    >
+                      {isRedirecting ? (
+                        <>
+                          <span className="review-cta-spinner" aria-hidden="true" />
+                          Abrindo ambiente seguro…
+                        </>
+                      ) : (
+                        <>
+                          <span>Continuar para entrega e pagamento</span>
+                          <svg className="review-cta-arrow" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </>
+                      )}
+                    </button>
+
+                    <p className="review-cta-note">Você ainda não será cobrado.</p>
+
+                    <div className="review-security-indicator">
+                      <span className="review-security-dot" aria-hidden="true" />
+                      <span>Ambiente protegido</span>
+                    </div>
+                  </section>
+
+                  {/* Rodapé de Confiança */}
+                  <footer className="review-trust-footer">
+                    <div className="review-trust-inline">
+                      <span>Pagamento seguro</span>
+                      <span className="trust-sep">·</span>
+                      <span>Confirmação por e-mail</span>
+                      <span className="trust-sep">·</span>
+                      <span>Rastreio do pedido</span>
+                    </div>
+
+                    <div className="review-trust-links">
+                      <a href="#">Política de Privacidade</a>
+                      <a href="#">Trocas e Devoluções</a>
+                      <a href="/minha-conta">Precisa de ajuda?</a>
+                    </div>
+                  </footer>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sticky Mobile Bar */}
+          {cartItems.length > 0 && (
+            <div
+              className={`review-sticky-bar${showReviewStickyBar ? ' visible' : ''}`}
+              aria-hidden={!showReviewStickyBar}
+            >
+              <div className="review-sticky-total">
+                <span className="review-sticky-label">SUBTOTAL</span>
+                <span className="review-sticky-price">{formatCurrency(subtotal)}</span>
+              </div>
+              <button
+                type="button"
+                className="review-sticky-btn checkout-submit-btn"
+                onClick={handleContinueToCheckout}
+                disabled={isRedirecting}
+              >
+                {isRedirecting ? (
+                  'Abrindo…'
+                ) : (
+                  <>
+                    <span>Continuar</span>
+                    <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true">
+                      <path fillRule="evenodd" d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06z" clipRule="evenodd" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <>
